@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Logik-Check (8 Sätze)</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --bg-color: #eef2f5;
+            --card-bg: #ffffff;
+            --border-radius: 10px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Frage-Karten */
+        .question-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .question-card {
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            background-color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
+        .statement {
+            font-size: 1.15rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .statement strong {
+            color: var(--primary-color);
+        }
+
+        .translation-hint {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Ja/Nein Buttons */
+        .options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #555;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        /* Interaktions-Zustände */
+        .option-btn:hover {
+            background-color: #f5f5f5;
+            border-color: #ccc;
+        }
+
+        .option-btn.selected {
+            background-color: #e3f2fd;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Ergebnis-Zustände (nach Check) */
+        .option-btn.correct-answer {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-color) !important;
+            color: white !important;
+        }
+
+        .option-btn.wrong-choice {
+            background-color: var(--error-color) !important;
+            border-color: var(--error-color) !important;
+            color: white !important;
+            opacity: 0.6;
+        }
+
+        /* Erklärungstext */
+        .feedback-text {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            border-left: 4px solid #ccc;
+        }
+
+        /* Buttons unten */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button.action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        button.action-btn:hover { opacity: 0.9; }
+        .btn-check { background-color: var(--success-color); }
+        .btn-reset { background-color: #ff9800; }
+        .btn-solve { background-color: var(--primary-color); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .statement { font-size: 1rem; }
+            .btn-group { flex-direction: column; }
+            button.action-btn { width: 100%; }
+            .options { flex-direction: row; } /* Buttons nebeneinander lassen, ist besser zum Tippen */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Logik-Check: Ja oder Nein?</h1>
+    <p class="instruction">
+        Lesen Sie die Sätze. Sind sie logisch richtig oder enthalten sie einen Widerspruch?<br>
+        Achten Sie auf die Bedeutung der Präfixe.
+    </p>
+
+    <div class="question-list">
+
+        <!-- Frage 1 -->
+        <div class="question-card" data-correct="false" id="q1">
+            <div class="statement">
+                1. Поезд <strong>подходит</strong> к станции. Это значит, что он едет <strong>от</strong> станции.
+                <span class="translation-hint">(Der Zug nähert sich dem Bahnhof. Das heißt, er fährt vom Bahnhof weg.)</span>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('q1', 'true')">Richtig</button>
+                <button class="option-btn" onclick="selectOption('q1', 'false')">Falsch</button>
+            </div>
+            <div class="feedback-text">
+                <strong>Lösung: Falsch.</strong><br>
+                <em>Подходит</em> bedeutet Annäherung (zu etwas hin). <em>От</em> bedeutet Entfernung (weg von). Das ist ein Widerspruch.
+            </div>
+        </div>
+
+        <!-- Frage 2 -->
+        <div class="question-card" data-correct="true" id="q2">
+            <div class="statement">
+                2. Антон <strong>входит</strong> в комнату. Теперь он <strong>внутри</strong>.
+                <span class="translation-hint">(Anton geht in das Zimmer hinein. Jetzt ist er drinnen.)</span>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('q2', 'true')">Richtig</button>
+                <button class="option-btn" onclick="selectOption('q2', 'false')">Falsch</button>
+            </div>
+            <div class="feedback-text">
+                <strong>Lösung: Richtig.</strong><br>
+                <em>Входит</em> (hineingehen) bedeutet, dass man am Ende <em>внутри</em> (drinnen) ist.
+            </div>
+        </div>
+
+        <!-- Frage 3 -->
+        <div class="question-card" data-correct="true" id="q3">
+            <div class="statement">
+                3. Мы <strong>выходим</strong> из дома. Мы идём <strong>на улицу</strong>.
+                <span class="translation-hint">(Wir gehen aus dem Haus hinaus. Wir gehen auf die Straße.)</span>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('q3', 'true')">Richtig</button>
+                <button class="option-btn" onclick="selectOption('q3', 'false')">Falsch</button>
+            </div>
+            <div class="feedback-text">
+                <strong>Lösung: Richtig.</strong><br>
+                Wer aus dem Haus <em>hinausgeht</em> (выходит), befindet sich danach draußen (auf der Straße).
+            </div>
+        </div>
+
+        <!-- Frage 4 -->
+        <div class="question-card" data-correct="false" id="q4">
+            <div class="statement">
+                4. Машина <strong>отъезжает</strong> от магазина. Она теперь <strong>рядом</strong> с магазином.
+                <span class="translation-hint">(Das Auto fährt vom Laden weg. Es ist jetzt neben dem Laden.)</span>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('q4', 'true')">Richtig</button>
+                <button class="option-btn" onclick="selectOption('q4', 'false')">Falsch</button>
+            </div>
+            <div class="feedback-text">
+                <strong>Lösung: Falsch.</strong><br>
+                <em>Отъезжает</em> bedeutet wegfahren. Wenn das Auto wegfährt, ist es nicht mehr <em>рядом</em> (neben/nah bei) dem Laden.
+            </div>
+        </div>
+
+        <!-- Frage 5 (NEU) -->
+        <div class="question-card" data-correct="true" id="q5">
+            <div class="statement">
+                5. Такси <strong>въезжает</strong> во двор. Теперь такси <strong>во дворе</strong>.
+                <span class="translation-hint">(Das Taxi fährt in den Hof hinein. Jetzt ist das Taxi im Hof.)</span>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('q5', 'true')">Richtig</button>
+                <button class="option-btn" onclick="selectOption('q5', 'false')">Falsch</button>
+            </div>
+            <div class="feedback-text">
+                <strong>Lösung: Richtig.</strong><br>
+                <em>Въезжать</em> bedeutet, in einen geschlossenen Raum oder ein Gelände hineinzufahren.
+            </div>
+        </div>
+
+        <!-- Frage 6 (NEU) -->
+        <div class="question-card" data-correct="false" id="q6">
+            <div class="statement">
+                6. Я <strong>подхожу</strong> к окну. Теперь я <strong>далеко</strong> от окна.
+                <span class="translation-hint">(Ich gehe an das Fenster heran. Jetzt bin ich weit weg vom Fenster.)</span>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('q6', 'true')">Richtig</button>
+                <button class="option-btn" onclick="selectOption('q6', 'false')">Falsch</button>
+            </div>
+            <div class="feedback-text">
+                <strong>Lösung: Falsch.</strong><br>
+                <em>Подходить</em> bedeutet Annäherung. Man ist danach nah dran, nicht <em>далеко</em> (weit weg).
+            </div>
+        </div>
+
+        <!-- Frage 7 (NEU) -->
+        <div class="question-card" data-correct="true" id="q7">
+            <div class="statement">
+                7. Автобус <strong>отходит</strong> от остановки. Он больше <strong>не стоит</strong> там.
+                <span class="translation-hint">(Der Bus fährt von der Haltestelle ab. Er steht nicht mehr dort.)</span>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('q7', 'true')">Richtig</button>
+                <button class="option-btn" onclick="selectOption('q7', 'false')">Falsch</button>
+            </div>
+            <div class="feedback-text">
+                <strong>Lösung: Richtig.</strong><br>
+                <em>Отходить</em> bedeutet das Verlassen eines Ortes (Abfahrt).
+            </div>
+        </div>
+
+        <!-- Frage 8 (NEU) -->
+        <div class="question-card" data-correct="false" id="q8">
+            <div class="statement">
+                8. Мы <strong>выезжаем</strong> из гаража. Теперь машина <strong>в гараже</strong>.
+                <span class="translation-hint">(Wir fahren aus der Garage hinaus. Jetzt ist das Auto in der Garage.)</span>
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="selectOption('q8', 'true')">Richtig</button>
+                <button class="option-btn" onclick="selectOption('q8', 'false')">Falsch</button>
+            </div>
+            <div class="feedback-text">
+                <strong>Lösung: Falsch.</strong><br>
+                <em>Выезжать</em> bedeutet hinausfahren. Wenn man hinausfährt, ist man danach nicht mehr drinnen.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button class="action-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="action-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="action-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+
+</div>
+
+<script>
+    let userSelections = {};
+
+    function selectOption(questionId, value) {
+        userSelections[questionId] = value;
+        const container = document.getElementById(questionId);
+        const buttons = container.querySelectorAll('.option-btn');
+        
+        buttons.forEach(btn => {
+            btn.classList.remove('selected', 'correct-answer', 'wrong-choice');
+            const btnValue = btn.getAttribute('onclick').includes("'true'") ? 'true' : 'false';
+            if (btnValue === value) {
+                btn.classList.add('selected');
+            }
+        });
+
+        // Feedback verstecken bei neuer Auswahl
+        const feedback = container.querySelector('.feedback-text');
+        feedback.style.display = 'none';
+        feedback.style.borderColor = '#ccc';
+    }
+
+    function checkAnswers() {
+        const questions = document.querySelectorAll('.question-card');
+
+        questions.forEach(card => {
+            const qId = card.id;
+            const correctAnswer = card.dataset.correct;
+            const userAnswer = userSelections[qId];
+            const feedback = card.querySelector('.feedback-text');
+            const buttons = card.querySelectorAll('.option-btn');
+
+            buttons.forEach(btn => btn.classList.remove('correct-answer', 'wrong-choice'));
+
+            if (!userAnswer) return; 
+
+            let selectedBtn;
+            buttons.forEach(btn => {
+                const btnVal = btn.getAttribute('onclick').includes("'true'") ? 'true' : 'false';
+                if (btnVal === userAnswer) selectedBtn = btn;
+            });
+
+            if (userAnswer === correctAnswer) {
+                selectedBtn.classList.add('correct-answer');
+                feedback.style.borderLeftColor = 'var(--success-color)';
+            } else {
+                selectedBtn.classList.add('wrong-choice');
+                feedback.style.borderLeftColor = 'var(--error-color)';
+            }
+            
+            feedback.style.display = 'block';
+        });
+    }
+
+    function resetTask() {
+        userSelections = {};
+        const questions = document.querySelectorAll('.question-card');
+        
+        questions.forEach(card => {
+            const buttons = card.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected', 'correct-answer', 'wrong-choice'));
+            
+            const feedback = card.querySelector('.feedback-text');
+            feedback.style.display = 'none';
+        });
+    }
+
+    function showSolution() {
+        resetTask(); 
+        const questions = document.querySelectorAll('.question-card');
+        questions.forEach(card => {
+            const correctVal = card.dataset.correct;
+            const feedback = card.querySelector('.feedback-text');
+            const buttons = card.querySelectorAll('.option-btn');
+
+            buttons.forEach(btn => {
+                const btnVal = btn.getAttribute('onclick').includes("'true'") ? 'true' : 'false';
+                if (btnVal === correctVal) {
+                    btn.classList.add('correct-answer');
+                }
+            });
+            
+            feedback.style.display = 'block';
+            feedback.style.borderLeftColor = 'var(--primary-color)';
+        });
+    }
+</script>
+
+</body>
+</html>
