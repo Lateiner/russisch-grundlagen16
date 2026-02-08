@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Antonyme der Bewegung</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #f5f5f5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --border-radius: 8px;
+            --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* Wort-Pool (Quelle) */
+        .word-pool {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+            min-height: 60px;
+            border: 2px solid #e0e0e0;
+        }
+
+        /* Draggable Items */
+        .draggable {
+            background-color: white;
+            border: 1px solid #bbb;
+            color: var(--text-color);
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .draggable:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+
+        /* Matching Area */
+        .matching-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .match-row {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr; /* Links - Pfeil - Rechts */
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Linke Seite (Feststehend) */
+        .static-word {
+            background-color: #e3f2fd; /* Leichtes Blau */
+            color: #0d47a1;
+            padding: 12px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #bbdefb;
+        }
+        
+        .static-word .translation {
+            font-weight: normal;
+            font-size: 0.85em;
+            color: #555;
+            margin-left: 8px;
+        }
+
+        /* Pfeil in der Mitte */
+        .arrow-separator {
+            text-align: center;
+            color: #999;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* Rechte Seite (Dropzone) */
+        .dropzone {
+            min-height: 48px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            background-color: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Zentriert Inhalt */
+            padding: 5px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .dropzone.drag-over {
+            background-color: #e8f5e9;
+            border-color: var(--success-color);
+        }
+
+        /* Feedback Farben */
+        .dropzone.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+            border-style: solid;
+        }
+
+        .dropzone.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            border-style: solid;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        button:hover { opacity: 0.9; }
+        .btn-check { background-color: var(--success-color); }
+        .btn-reset { background-color: #ff9800; }
+        .btn-solve { background-color: var(--primary-color); }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            
+            .match-row {
+                grid-template-columns: 1fr; /* Alles untereinander */
+                gap: 5px;
+                padding: 15px;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                background: #f9f9f9;
+            }
+
+            .arrow-separator {
+                transform: rotate(90deg); /* Pfeil nach unten drehen */
+                height: 20px;
+                line-height: 20px;
+            }
+
+            .static-word, .dropzone {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .static-word {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .static-word .translation {
+                margin-left: 0;
+            }
+
+            .btn-group { flex-direction: column; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Antonym-Paare (Gegenteile)</h1>
+    <p class="instruction">
+        Finden Sie das logische Gegenteil!<br>
+        Ziehen Sie das passende Verb aus dem grauen Feld in die Lücke rechts.
+    </p>
+
+    <!-- Wort-Pool (Antworten) -->
+    <div class="word-pool" id="wordPool">
+        <div class="draggable" draggable="true" id="ans-vyhodit">🚶 выходить (hinaus)</div>
+        <div class="draggable" draggable="true" id="ans-othodit">🚶 отходить (weg)</div>
+        <div class="draggable" draggable="true" id="ans-vyezzhaet">🚗 выезжать (hinaus)</div>
+        <div class="draggable" draggable="true" id="ans-otyezzhaet">🚗 отъезжать (weg)</div>
+    </div>
+
+    <!-- Zuordnungs-Liste -->
+    <div class="matching-list">
+
+        <!-- Paar 1 -->
+        <div class="match-row">
+            <div class="static-word">
+                <span>🚶 входить</span>
+                <span class="translation">(hineingehen)</span>
+            </div>
+            <div class="arrow-separator">↔</div>
+            <div class="dropzone" data-correct="ans-vyhodit"></div>
+        </div>
+
+        <!-- Paar 2 -->
+        <div class="match-row">
+            <div class="static-word">
+                <span>🚶 подходить</span>
+                <span class="translation">(herangehen)</span>
+            </div>
+            <div class="arrow-separator">↔</div>
+            <div class="dropzone" data-correct="ans-othodit"></div>
+        </div>
+
+        <!-- Paar 3 -->
+        <div class="match-row">
+            <div class="static-word">
+                <span>🚗 въезжать</span>
+                <span class="translation">(hineinfahren)</span>
+            </div>
+            <div class="arrow-separator">↔</div>
+            <div class="dropzone" data-correct="ans-vyezzhaet"></div>
+        </div>
+
+        <!-- Paar 4 -->
+        <div class="match-row">
+            <div class="static-word">
+                <span>🚗 подъезжать</span>
+                <span class="translation">(heranfahren)</span>
+            </div>
+            <div class="arrow-separator">↔</div>
+            <div class="dropzone" data-correct="ans-otyezzhaet"></div>
+        </div>
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+
+</div>
+
+<script>
+    /* Drag & Drop Logic */
+    const draggables = document.querySelectorAll('.draggable');
+    const dropzones = document.querySelectorAll('.dropzone');
+    const wordPool = document.getElementById('wordPool');
+    let draggedItem = null;
+
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', (e) => {
+            draggedItem = draggable;
+            e.dataTransfer.effectAllowed = 'move';
+            draggable.style.opacity = '0.5';
+        });
+
+        draggable.addEventListener('dragend', () => {
+            draggedItem = null;
+            draggable.style.opacity = '1';
+        });
+    });
+
+    const allZones = [...dropzones, wordPool];
+
+    allZones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (zone.classList.contains('dropzone')) {
+                zone.classList.add('drag-over');
+            }
+        });
+
+        zone.addEventListener('dragleave', () => {
+            if (zone.classList.contains('dropzone')) {
+                zone.classList.remove('drag-over');
+            }
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (zone.classList.contains('dropzone')) {
+                zone.classList.remove('drag-over');
+            }
+
+            if (draggedItem) {
+                // Tausch-Logik: Wenn Zone schon voll ist, schiebe das alte Element zurück
+                if (zone.classList.contains('dropzone') && zone.children.length > 0) {
+                    const existingItem = zone.children[0];
+                    wordPool.appendChild(existingItem);
+                }
+                
+                zone.appendChild(draggedItem);
+                zone.classList.remove('correct', 'incorrect');
+            }
+        });
+    });
+
+    /* Button Functions */
+    function checkAnswers() {
+        dropzones.forEach(zone => {
+            const item = zone.querySelector('.draggable');
+            // Reset styles
+            zone.classList.remove('correct', 'incorrect');
+
+            if (item) {
+                if (item.id === zone.dataset.correct) {
+                    zone.classList.add('correct');
+                } else {
+                    zone.classList.add('incorrect');
+                }
+            } else {
+                zone.classList.add('incorrect'); // Leere Felder als falsch markieren
+            }
+        });
+    }
+
+    function resetTask() {
+        // Alle Elemente zurück in den Pool
+        draggables.forEach(item => {
+            wordPool.appendChild(item);
+        });
+        
+        // Styles entfernen
+        dropzones.forEach(zone => {
+            zone.classList.remove('correct', 'incorrect', 'drag-over');
+        });
+    }
+
+    function showSolution() {
+        resetTask(); // Erst alles leeren
+
+        dropzones.forEach(zone => {
+            const correctId = zone.dataset.correct;
+            const correctItem = document.getElementById(correctId);
+            if (correctItem) {
+                zone.appendChild(correctItem);
+                zone.classList.add('correct');
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
