@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Kasus-Wahl</title>
+    <!-- Polyfill (Standard) -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #f5f5f5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --highlight-color: #e91e63; /* Farbe für Präpositionen */
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Grammatik-Hinweis Box */
+        .grammar-hint {
+            font-size: 0.9rem;
+            color: #666;
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .grammar-hint strong { color: #333; }
+
+        /* Frage-Karte */
+        .quiz-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s;
+        }
+
+        .quiz-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .sentence {
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .prep {
+            color: var(--highlight-color);
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        /* Optionen Container */
+        .options-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Der Auswahl-Button */
+        .option-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 30px; /* Pill Shape */
+            background: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #555;
+            transition: all 0.2s;
+            text-align: center;
+            outline: none;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-color);
+            background-color: #e8eaf6;
+        }
+
+        /* Ausgewählt */
+        .option-btn.selected {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(63, 81, 181, 0.3);
+        }
+
+        /* Ergebnisse */
+        .option-btn.correct-answer {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-color) !important;
+            color: white !important;
+        }
+
+        .option-btn.wrong-choice {
+            background-color: var(--error-color) !important;
+            border-color: var(--error-color) !important;
+            color: white !important;
+            opacity: 0.8;
+        }
+
+        /* Fall-Hinweis (wird nach Lösung angezeigt) */
+        .case-info {
+            display: none;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* Buttons unten */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        button.action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        button.action-btn:hover { opacity: 0.9; }
+        .btn-check { background-color: var(--success-color); }
+        .btn-reset { background-color: #ff9800; }
+        .btn-solve { background-color: var(--primary-color); }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .sentence { font-size: 1.1rem; }
+            .option-btn { width: 100%; flex: 100%; border-radius: 8px; } /* Untereinander auf Handy */
+            .btn-group { flex-direction: column; }
+            button.action-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Kasus-Wahl: Welcher Fall?</h1>
+    <p class="instruction">
+        Wählen Sie die richtige Endung.<br>
+        Achten Sie auf die markierte Präposition.
+    </p>
+
+    <div class="grammar-hint">
+        <strong>Tipp:</strong><br>
+        <span style="color:var(--highlight-color)">к</span> + Dativ (wem?) &nbsp;|&nbsp; 
+        <span style="color:var(--highlight-color)">в</span> + Akkusativ (wohin?) &nbsp;|&nbsp; 
+        <span style="color:var(--highlight-color)">из / от</span> + Genitiv (woher/wovon?)
+    </div>
+
+    <!-- 1. Dativ Maskulin (Tisch) -->
+    <div class="quiz-card" id="q1" data-correct="столу">
+        <div class="sentence">1. Он подходит <span class="prep">к</span> ...</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q1', 'стол')">стол</button>
+            <button class="option-btn" onclick="selectOption('q1', 'стола')">стола</button>
+            <button class="option-btn" onclick="selectOption('q1', 'столу')">столу</button>
+        </div>
+        <div class="case-info">Dativ (к кому/чему?) → Endung -у</div>
+    </div>
+
+    <!-- 2. Akkusativ Feminin (Schule) -->
+    <div class="quiz-card" id="q2" data-correct="школу">
+        <div class="sentence">2. Анна входит <span class="prep">в</span> ...</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q2', 'школа')">школа</button>
+            <button class="option-btn" onclick="selectOption('q2', 'школу')">школу</button>
+            <button class="option-btn" onclick="selectOption('q2', 'школы')">школы</button>
+        </div>
+        <div class="case-info">Akkusativ (куда?) → Endung -у</div>
+    </div>
+
+    <!-- 3. Genitiv Maskulin (Haus) -->
+    <div class="quiz-card" id="q3" data-correct="дома">
+        <div class="sentence">3. Мы выходим <span class="prep">из</span> ...</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q3', 'дом')">дом</button>
+            <button class="option-btn" onclick="selectOption('q3', 'дома')">дома</button>
+            <button class="option-btn" onclick="selectOption('q3', 'дому')">дому</button>
+        </div>
+        <div class="case-info">Genitiv (откуда?) → Endung -а</div>
+    </div>
+
+    <!-- 4. Genitiv Feminin (Wand) -->
+    <div class="quiz-card" id="q4" data-correct="стены">
+        <div class="sentence">4. Отойди <span class="prep">от</span> ...</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q4', 'стена')">стена</button>
+            <button class="option-btn" onclick="selectOption('q4', 'стену')">стену</button>
+            <button class="option-btn" onclick="selectOption('q4', 'стены')">стены</button>
+        </div>
+        <div class="case-info">Genitiv (от чего?) → Endung -ы</div>
+    </div>
+
+    <!-- 5. Akkusativ Maskulin Inanimat (Garage) -->
+    <div class="quiz-card" id="q5" data-correct="гараж">
+        <div class="sentence">5. Папа въезжает <span class="prep">в</span> ...</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q5', 'гараж')">гараж</button>
+            <button class="option-btn" onclick="selectOption('q5', 'гаража')">гаража</button>
+            <button class="option-btn" onclick="selectOption('q5', 'гаражу')">гаражу</button>
+        </div>
+        <div class="case-info">Akkusativ (wohin?) → Unbelebt = Nominativ</div>
+    </div>
+
+    <!-- 6. Dativ Feminin (Hörsaal/Auditorium auf -ия) -->
+    <div class="quiz-card" id="q6" data-correct="аудитории">
+        <div class="sentence">6. Студенты подходят <span class="prep">к</span> ...</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q6', 'аудитория')">аудитория</button>
+            <button class="option-btn" onclick="selectOption('q6', 'аудиторию')">аудиторию</button>
+            <button class="option-btn" onclick="selectOption('q6', 'аудитории')">аудитории</button>
+        </div>
+        <div class="case-info">Dativ (-ия wird zu -ии)</div>
+    </div>
+
+    <!-- 7. Genitiv Maskulin (Geschäft) -->
+    <div class="quiz-card" id="q7" data-correct="магазина">
+        <div class="sentence">7. Машина отъехала <span class="prep">от</span> ...</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q7', 'магазин')">магазин</button>
+            <button class="option-btn" onclick="selectOption('q7', 'магазина')">магазина</button>
+            <button class="option-btn" onclick="selectOption('q7', 'магазину')">магазину</button>
+        </div>
+        <div class="case-info">Genitiv (от чего?) → Endung -а</div>
+    </div>
+
+    <!-- 8. Akkusativ Feminin (Wohnung) -->
+    <div class="quiz-card" id="q8" data-correct="квартиру">
+        <div class="sentence">8. Они вошли <span class="prep">в</span> новую ...</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q8', 'квартира')">квартира</button>
+            <button class="option-btn" onclick="selectOption('q8', 'квартиры')">квартиры</button>
+            <button class="option-btn" onclick="selectOption('q8', 'квартиру')">квартиру</button>
+        </div>
+        <div class="case-info">Akkusativ (куда?) → Endung -у</div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button class="action-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="action-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="action-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+
+</div>
+
+<script>
+    // Speichert User-Antworten: { 'q1': 'стол', ... }
+    let userAnswers = {};
+
+    function selectOption(questionId, value) {
+        userAnswers[questionId] = value;
+        
+        // UI Update
+        const card = document.getElementById(questionId);
+        const buttons = card.querySelectorAll('.option-btn');
+        const info = card.querySelector('.case-info');
+
+        buttons.forEach(btn => {
+            btn.classList.remove('selected', 'correct-answer', 'wrong-choice');
+            // Check value by parsing onclick attribute or innerText
+            // Einfacher: Wir vergleichen den Text im Button oder das Argument
+            if (btn.getAttribute('onclick').includes(`'${value}'`)) {
+                btn.classList.add('selected');
+            }
+        });
+
+        // Hide info on new selection
+        if(info) info.style.display = 'none';
+    }
+
+    function checkAnswers() {
+        const cards = document.querySelectorAll('.quiz-card');
+        
+        cards.forEach(card => {
+            const qId = card.id;
+            const correctVal = card.dataset.correct;
+            const userVal = userAnswers[qId];
+            const info = card.querySelector('.case-info');
+            const buttons = card.querySelectorAll('.option-btn');
+
+            // Reset status styles
+            buttons.forEach(btn => btn.classList.remove('correct-answer', 'wrong-choice'));
+
+            if (!userVal) return; // Keine Antwort gegeben
+
+            let selectedBtn;
+            buttons.forEach(btn => {
+                if (btn.getAttribute('onclick').includes(`'${userVal}'`)) selectedBtn = btn;
+            });
+
+            if (userVal === correctVal) {
+                selectedBtn.classList.add('correct-answer');
+            } else {
+                selectedBtn.classList.add('wrong-choice');
+            }
+
+            // Info immer anzeigen bei Check
+            if(info) info.style.display = 'block';
+        });
+    }
+
+    function resetTask() {
+        userAnswers = {};
+        const cards = document.querySelectorAll('.quiz-card');
+        
+        cards.forEach(card => {
+            const buttons = card.querySelectorAll('.option-btn');
+            const info = card.querySelector('.case-info');
+            
+            buttons.forEach(btn => btn.classList.remove('selected', 'correct-answer', 'wrong-choice'));
+            if(info) info.style.display = 'none';
+        });
+    }
+
+    function showSolution() {
+        resetTask(); // Auswahl löschen
+
+        const cards = document.querySelectorAll('.quiz-card');
+        cards.forEach(card => {
+            const correctVal = card.dataset.correct;
+            const buttons = card.querySelectorAll('.option-btn');
+            const info = card.querySelector('.case-info');
+
+            buttons.forEach(btn => {
+                if (btn.getAttribute('onclick').includes(`'${correctVal}'`)) {
+                    btn.classList.add('correct-answer');
+                }
+            });
+            
+            if(info) info.style.display = 'block';
+        });
+    }
+</script>
+
+</body>
+</html>
