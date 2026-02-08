@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Was passiert gleich? (8 Szenarien)</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #f5f5f5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Grid für die Karten */
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        /* Einzelne Karte */
+        .scenario-card {
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            background: #fff;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%; /* Gleich hohe Karten */
+        }
+
+        /* Bildbereich */
+        .visual-context {
+            width: 100%;
+            height: 160px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            overflow: hidden;
+        }
+
+        .visual-context svg {
+            width: 100%;
+            height: 100%;
+            max-width: 250px;
+        }
+
+        /* Textbeschreibung */
+        .situation-text {
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #555;
+            flex-grow: 1; /* Drückt Buttons nach unten */
+        }
+
+        .situation-text strong {
+            color: #333;
+            display: block;
+            margin-top: 8px;
+        }
+
+        /* Antwort-Optionen */
+        .options-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .choice-btn:hover {
+            background-color: #e3f2fd;
+            transform: translateY(-2px);
+        }
+
+        /* Feedback Zustände */
+        .choice-btn.correct {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .choice-btn.incorrect {
+            background-color: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+            opacity: 0.6;
+        }
+
+        .choice-btn.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Erklärung */
+        .feedback-msg {
+            display: none;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #444;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #ccc;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Buttons unten */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        button.action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        button.action-btn:hover { opacity: 0.9; }
+        .btn-reset { background-color: #ff9800; }
+        .btn-solve { background-color: var(--primary-color); }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .scenarios-grid { grid-template-columns: 1fr; }
+            .options-container { flex-direction: column; }
+            .choice-btn { width: 100%; }
+            .btn-group { flex-direction: column; }
+            button.action-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Was passiert als Nächstes?</h1>
+    <p class="instruction">
+        Schauen Sie sich die Situation an.<br>
+        Welche Handlung wird gleich passieren? (Futur)
+    </p>
+
+    <div class="scenarios-grid">
+
+        <!-- Szenario 1: Hineingehen -->
+        <div class="scenario-card" id="scene1" data-correct="войдёт">
+            <div class="visual-context">
+                <svg viewBox="0 0 200 150">
+                    <rect x="50" y="20" width="100" height="130" fill="#f5f5f5" stroke="#333"/>
+                    <rect x="70" y="50" width="60" height="100" fill="#fff" stroke="#333"/>
+                    <circle cx="120" cy="100" r="3" fill="#333"/>
+                    <text x="85" y="130" font-size="30">🚶</text>
+                    <line x1="110" y1="100" x2="118" y2="100" stroke="#3f51b5" stroke-width="3" marker-end="url(#arrowBlue)"/>
+                </svg>
+            </div>
+            <div class="situation-text">
+                Boris steht vor der geschlossenen Tür. Er hat den Schlüssel.<br>
+                <strong>Что он сейчас сделает?</strong>
+            </div>
+            <div class="options-container">
+                <button class="choice-btn" onclick="checkChoice(this, 'войдёт', 'scene1')">Он войдёт</button>
+                <button class="choice-btn" onclick="checkChoice(this, 'выйдет', 'scene1')">Он выйдет</button>
+            </div>
+            <div class="feedback-msg"><strong>Richtig!</strong> Er ist draußen und will nach drinnen (в-).</div>
+        </div>
+
+        <!-- Szenario 2: Hinausgehen -->
+        <div class="scenario-card" id="scene2" data-correct="выйдет">
+            <div class="visual-context">
+                <svg viewBox="0 0 200 150">
+                    <rect x="20" y="10" width="160" height="130" fill="#e0f7fa" stroke="none"/>
+                    <rect x="70" y="40" width="60" height="100" fill="#fff" stroke="#333"/>
+                    <text x="90" y="120" font-size="30">🚶‍♀️</text>
+                    <line x1="100" y1="120" x2="150" y2="120" stroke="#f44336" stroke-width="3" stroke-dasharray="4" marker-end="url(#arrowRed)"/>
+                </svg>
+            </div>
+            <div class="situation-text">
+                Anna ist im Zimmer. Sie zieht ihren Mantel an und geht zur Tür.<br>
+                <strong>Что она сейчас сделает?</strong>
+            </div>
+            <div class="options-container">
+                <button class="choice-btn" onclick="checkChoice(this, 'войдёт', 'scene2')">Она войдёт</button>
+                <button class="choice-btn" onclick="checkChoice(this, 'выйдет', 'scene2')">Она выйдет</button>
+            </div>
+            <div class="feedback-msg"><strong>Richtig!</strong> Sie verlässt den Raum (вы-).</div>
+        </div>
+
+        <!-- Szenario 3: Hineinfahren -->
+        <div class="scenario-card" id="scene3" data-correct="въедет">
+            <div class="visual-context">
+                <svg viewBox="0 0 200 150">
+                    <rect x="50" y="40" width="100" height="100" fill="#bdbdbd" stroke="#333"/>
+                    <rect x="60" y="60" width="80" height="80" fill="#333"/>
+                    <text x="80" y="130" font-size="40">🚗</text>
+                    <line x1="100" y1="110" x2="100" y2="80" stroke="white" stroke-width="3" marker-end="url(#arrowWhite)"/>
+                </svg>
+            </div>
+            <div class="situation-text">
+                Das Auto steht vor der offenen Garage.<br>
+                <strong>Что сделает машина?</strong>
+            </div>
+            <div class="options-container">
+                <button class="choice-btn" onclick="checkChoice(this, 'въедет', 'scene3')">Она въедет</button>
+                <button class="choice-btn" onclick="checkChoice(this, 'отъедет', 'scene3')">Она отъедет</button>
+            </div>
+            <div class="feedback-msg"><strong>Richtig!</strong> Ziel ist das Innere der Garage (въ-).</div>
+        </div>
+
+        <!-- Szenario 4: Heranfahren -->
+        <div class="scenario-card" id="scene4" data-correct="подъедет">
+            <div class="visual-context">
+                <svg viewBox="0 0 200 150">
+                    <rect x="150" y="50" width="10" height="80" fill="#555"/>
+                    <rect x="130" y="50" width="50" height="10" fill="#3f51b5"/>
+                    <text x="10" y="100" font-size="40">🚌</text>
+                    <line x1="60" y1="85" x2="130" y2="85" stroke="#333" stroke-width="2" stroke-dasharray="5" marker-end="url(#arrowBlack)"/>
+                </svg>
+            </div>
+            <div class="situation-text">
+                Der Bus nähert sich der Haltestelle.<br>
+                <strong>Что сделает автобус?</strong>
+            </div>
+            <div class="options-container">
+                <button class="choice-btn" onclick="checkChoice(this, 'подъедет', 'scene4')">Он подъедет</button>
+                <button class="choice-btn" onclick="checkChoice(this, 'войдёт', 'scene4')">Он войдёт</button>
+            </div>
+            <div class="feedback-msg"><strong>Richtig!</strong> Annäherung an ein Ziel (под-).</div>
+        </div>
+
+        <!-- Szenario 5: Herangehen (NEU) -->
+        <div class="scenario-card" id="scene5" data-correct="подойдёт">
+            <div class="visual-context">
+                <svg viewBox="0 0 200 150">
+                    <rect x="140" y="40" width="40" height="60" fill="#4caf50"/> <!-- Tafel -->
+                    <text x="20" y="100" font-size="30">🚶</text>
+                    <line x1="40" y1="90" x2="120" y2="90" stroke="#333" stroke-width="2" marker-end="url(#arrowBlack)"/>
+                </svg>
+            </div>
+            <div class="situation-text">
+                Der Lehrer ruft den Schüler zur Tafel.<br>
+                <strong>Что сделает ученик?</strong>
+            </div>
+            <div class="options-container">
+                <button class="choice-btn" onclick="checkChoice(this, 'подойдёт', 'scene5')">Он подойдёт</button>
+                <button class="choice-btn" onclick="checkChoice(this, 'войдёт', 'scene5')">Он войдёт</button>
+            </div>
+            <div class="feedback-msg"><strong>Richtig!</strong> Er geht nah heran, aber nicht hinein (под-).</div>
+        </div>
+
+        <!-- Szenario 6: Weggehen (NEU) -->
+        <div class="scenario-card" id="scene6" data-correct="отойдёт">
+            <div class="visual-context">
+                <svg viewBox="0 0 200 150">
+                    <rect x="20" y="30" width="50" height="50" fill="#90caf9" stroke="#333"/> <!-- Fenster -->
+                    <text x="40" y="100" font-size="30">🚶‍♀️</text>
+                    <!-- Pfeil weg vom Fenster -->
+                    <line x1="70" y1="90" x2="130" y2="90" stroke="#ff9800" stroke-width="3" marker-end="url(#arrowOrange)"/>
+                </svg>
+            </div>
+            <div class="situation-text">
+                Maria steht am Fenster. Jetzt will sie in die Küche gehen.<br>
+                <strong>Что она сейчас сделает?</strong> (Vom Fenster...)
+            </div>
+            <div class="options-container">
+                <button class="choice-btn" onclick="checkChoice(this, 'отойдёт', 'scene6')">Она отойдёт</button>
+                <button class="choice-btn" onclick="checkChoice(this, 'выйдет', 'scene6')">Она выйдет</button>
+            </div>
+            <div class="feedback-msg"><strong>Richtig!</strong> Sie entfernt sich von einem Objekt (от-).</div>
+        </div>
+
+        <!-- Szenario 7: Wegfahren (NEU) -->
+        <div class="scenario-card" id="scene7" data-correct="отъедет">
+            <div class="visual-context">
+                <svg viewBox="0 0 200 150">
+                    <rect x="20" y="20" width="20" height="100" fill="#ccc"/> <!-- Wand/Bordstein -->
+                    <text x="50" y="80" font-size="40">🚕</text>
+                    <line x1="90" y1="70" x2="140" y2="70" stroke="#ff9800" stroke-width="3" marker-end="url(#arrowOrange)"/>
+                </svg>
+            </div>
+            <div class="situation-text">
+                Der Passagier sitzt im Taxi. Das Taxi startet.<br>
+                <strong>Что сделает такси?</strong> (Vom Haus...)
+            </div>
+            <div class="options-container">
+                <button class="choice-btn" onclick="checkChoice(this, 'отъедет', 'scene7')">Оно отъедет</button>
+                <button class="choice-btn" onclick="checkChoice(this, 'въедет', 'scene7')">Оно въедет</button>
+            </div>
+            <div class="feedback-msg"><strong>Richtig!</strong> Es fährt vom Startpunkt weg (от-).</div>
+        </div>
+
+        <!-- Szenario 8: Hinausfahren (NEU) -->
+        <div class="scenario-card" id="scene8" data-correct="выедет">
+            <div class="visual-context">
+                <svg viewBox="0 0 200 150">
+                    <rect x="10" y="10" width="100" height="130" fill="#e8f5e9" stroke="none"/> <!-- Hof -->
+                    <rect x="110" y="10" width="10" height="130" fill="#333"/> <!-- Tor/Wand -->
+                    <rect x="110" y="50" width="10" height="40" fill="#fff"/> <!-- Offenes Tor -->
+                    <text x="60" y="80" font-size="30">🚴</text>
+                    <line x1="80" y1="70" x2="140" y2="70" stroke="#f44336" stroke-width="3" marker-end="url(#arrowRed)"/>
+                </svg>
+            </div>
+            <div class="situation-text">
+                Der Radfahrer ist im Hof. Das Tor ist offen.<br>
+                <strong>Что он сейчас сделает?</strong> (Auf die Straße...)
+            </div>
+            <div class="options-container">
+                <button class="choice-btn" onclick="checkChoice(this, 'выедет', 'scene8')">Он выедет</button>
+                <button class="choice-btn" onclick="checkChoice(this, 'отъедет', 'scene8')">Он отъедет</button>
+            </div>
+            <div class="feedback-msg"><strong>Richtig!</strong> Er verlässt ein geschlossenes Areal (вы-).</div>
+        </div>
+
+    </div>
+
+    <!-- SVG Definitionen für Pfeile -->
+    <svg style="display: none;">
+        <defs>
+            <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#3f51b5"/></marker>
+            <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#f44336"/></marker>
+            <marker id="arrowWhite" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="white"/></marker>
+            <marker id="arrowBlack" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#333"/></marker>
+            <marker id="arrowOrange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#ff9800"/></marker>
+        </defs>
+    </svg>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button class="action-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="action-btn btn-solve" onclick="showSolution()">Lösungen anzeigen</button>
+    </div>
+
+</div>
+
+<script>
+    function checkChoice(btn, value, sceneId) {
+        const card = document.getElementById(sceneId);
+        const correctVal = card.dataset.correct;
+        const feedback = card.querySelector('.feedback-msg');
+        const buttons = card.querySelectorAll('.choice-btn');
+
+        buttons.forEach(b => b.classList.add('disabled'));
+
+        if (value === correctVal) {
+            btn.classList.add('correct');
+            feedback.style.borderLeftColor = 'var(--success-color)';
+            // Behält den Text im HTML, fügt nur Farbe hinzu
+            feedback.style.display = 'block';
+        } else {
+            btn.classList.add('incorrect');
+            feedback.style.borderLeftColor = 'var(--error-color)';
+            // Richtigen Button anzeigen
+            buttons.forEach(b => {
+                if(b.getAttribute('onclick').includes(`'${correctVal}'`)) {
+                    b.classList.add('correct');
+                }
+            });
+            feedback.innerHTML = '<strong>Falsch!</strong> ' + feedback.innerText.replace('Richtig! ', '');
+            feedback.style.display = 'block';
+        }
+    }
+
+    function resetTask() {
+        const cards = document.querySelectorAll('.scenario-card');
+        cards.forEach(card => {
+            const buttons = card.querySelectorAll('.choice-btn');
+            const feedback = card.querySelector('.feedback-msg');
+            
+            buttons.forEach(b => {
+                b.classList.remove('correct', 'incorrect', 'disabled');
+            });
+            
+            feedback.style.display = 'none';
+            // Reset Text if changed by "Falsch!"
+            if(feedback.innerHTML.includes('Falsch!')) {
+                 feedback.innerHTML = feedback.innerHTML.replace('Falsch! ', 'Richtig! ');
+            }
+        });
+    }
+
+    function showSolution() {
+        resetTask(); 
+        const cards = document.querySelectorAll('.scenario-card');
+        cards.forEach(card => {
+            const correctVal = card.dataset.correct;
+            const buttons = card.querySelectorAll('.choice-btn');
+            const feedback = card.querySelector('.feedback-msg');
+
+            buttons.forEach(b => {
+                b.classList.add('disabled');
+                if(b.getAttribute('onclick').includes(`'${correctVal}'`)) {
+                    b.classList.add('correct');
+                }
+            });
+
+            feedback.style.display = 'block';
+            feedback.style.borderLeftColor = 'var(--primary-color)';
+        });
+    }
+</script>
+
+</body>
+</html>
