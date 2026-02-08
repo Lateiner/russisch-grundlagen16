@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Tagebuch (Kontext)</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --paper-color: #fff9c4; /* Leichtes Gelb für Notizblock-Look */
+            --line-color: #e0e0e0;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8; /* Größerer Zeilenabstand für Lesbarkeit */
+            color: var(--text-color);
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Tagebuch-Stil */
+        .diary-entry {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 25px;
+            border-radius: 4px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        /* Datum oben */
+        .diary-date {
+            font-weight: bold;
+            color: #666;
+            border-bottom: 2px solid var(--primary-color);
+            display: inline-block;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+        }
+
+        /* Der Text */
+        .diary-text {
+            font-size: 1.15rem;
+            text-align: justify;
+        }
+
+        /* Dropdowns im Text */
+        select.cloze-select {
+            appearance: none; /* Standard-Style entfernen für Einheitlichkeit */
+            -webkit-appearance: none;
+            background-color: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 5px;
+            min-width: 120px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        select.cloze-select:hover {
+            background-color: #e3f2fd;
+            border-color: var(--primary-color);
+        }
+
+        select.cloze-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(63, 81, 181, 0.3);
+        }
+
+        /* Status Farben */
+        select.cloze-select.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        select.cloze-select.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        /* Vokabelhilfe unten */
+        .vocab-help {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        button.action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        button.action-btn:hover { opacity: 0.9; }
+        .btn-check { background-color: var(--success-color); }
+        .btn-reset { background-color: #ff9800; }
+        .btn-solve { background-color: var(--primary-color); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .diary-text { font-size: 1rem; text-align: left; }
+            select.cloze-select { 
+                display: block; 
+                width: 100%; 
+                margin: 10px 0; 
+            }
+            .btn-group { flex-direction: column; }
+            button.action-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Ein Tag im Leben von Boris</h1>
+    <p class="instruction">
+        Ergänzen Sie den Tagesablauf.<br>
+        Wählen Sie das Verb, das logisch zum Kontext passt.
+    </p>
+
+    <div class="diary-entry">
+        <div class="diary-date">Понедельник, 12 мая</div>
+        
+        <div class="diary-text">
+            Это был обычный день.
+            <br><br>
+            08:00. Я позавтракал и 
+            <select class="cloze-select" data-correct="вышел">
+                <option value="">...</option>
+                <option value="вышел">вышел</option>
+                <option value="вошел">вошел</option>
+                <option value="подошел">подошел</option>
+            </select>
+            из дома. Погода была хорошая.
+            <br><br>
+            08:10. Я медленно 
+            <select class="cloze-select" data-correct="подошел">
+                <option value="">...</option>
+                <option value="отошел">отошел</option>
+                <option value="подошел">подошел</option>
+                <option value="вышел">вышел</option>
+            </select>
+            к автобусной остановке.
+            <br><br>
+            08:15. Автобус приехал. Я 
+            <select class="cloze-select" data-correct="вошел">
+                <option value="">...</option>
+                <option value="вошел">вошел</option>
+                <option value="вышел">вышел</option>
+                <option value="отошел">отошел</option>
+            </select>
+            в автобус и сел у окна.
+            <br><br>
+            09:00. Я приехал в офис. Я 
+            <select class="cloze-select" data-correct="вошел">
+                <option value="">...</option>
+                <option value="вышел">вышел</option>
+                <option value="отъехал">отъехал</option>
+                <option value="вошел">вошел</option>
+            </select>
+            в здание и начал работать.
+            <br><br>
+            18:00. Работа закончилась. Я 
+            <select class="cloze-select" data-correct="вышел">
+                <option value="">...</option>
+                <option value="вошел">вошел</option>
+                <option value="вышел">вышел</option>
+                <option value="подошел">подошел</option>
+            </select>
+            из офиса.
+            <br><br>
+            18:05. Я увидел такси. Я сел в машину, и мы 
+            <select class="cloze-select" data-correct="отъехали">
+                <option value="">...</option>
+                <option value="подъехали">подъехали</option>
+                <option value="вошли">вошли</option>
+                <option value="отъехали">отъехали</option>
+            </select>
+            от офиса.
+        </div>
+
+        <div class="vocab-help">
+            *обычный (gewöhnlich), здание (Gebäude), остановка (Haltestelle)
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button class="action-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="action-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="action-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+
+</div>
+
+<script>
+    function checkAnswers() {
+        const selects = document.querySelectorAll('.cloze-select');
+        
+        selects.forEach(select => {
+            const correctVal = select.dataset.correct;
+            const userVal = select.value;
+
+            // Reset classes
+            select.classList.remove('correct', 'incorrect');
+
+            if (userVal === "") {
+                // Leer gelassen -> als inkorrekt markieren (oder neutral lassen, hier: inkorrekt)
+                select.classList.add('incorrect');
+            } else if (userVal === correctVal) {
+                select.classList.add('correct');
+            } else {
+                select.classList.add('incorrect');
+            }
+        });
+    }
+
+    function resetTask() {
+        const selects = document.querySelectorAll('.cloze-select');
+        selects.forEach(select => {
+            select.value = "";
+            select.classList.remove('correct', 'incorrect');
+        });
+    }
+
+    function showSolution() {
+        const selects = document.querySelectorAll('.cloze-select');
+        selects.forEach(select => {
+            select.value = select.dataset.correct;
+            select.classList.remove('incorrect');
+            select.classList.add('correct');
+        });
+    }
+</script>
+
+</body>
+</html>
