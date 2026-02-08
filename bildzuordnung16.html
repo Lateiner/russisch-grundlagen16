@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Verben der Bewegung (Visualisiert)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #f5f5f5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --border-radius: 12px;
+            --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            background: #e8eaf6;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* Wort-Pool */
+        .word-pool {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+            min-height: 60px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .draggable {
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: grab;
+            user-select: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .draggable:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        /* Fahr-Verben visuell unterscheiden */
+        .draggable.transport {
+            border-color: #1565c0;
+            color: #1565c0;
+        }
+        .draggable.transport:hover {
+            background-color: #1565c0;
+            color: white;
+        }
+
+        /* Grid */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .image-card {
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            text-align: center;
+            background: #fff;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .category-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.8rem;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #666;
+        }
+
+        /* SVG Styling */
+        .image-card svg {
+            width: 100%;
+            height: 160px;
+            margin-bottom: 15px;
+            overflow: visible; /* Damit Emojis nicht abgeschnitten werden */
+        }
+
+        /* SVG Text (Emojis) */
+        .svg-icon {
+            font-size: 40px; 
+            cursor: default;
+        }
+
+        /* Dropzone */
+        .dropzone {
+            width: 100%;
+            height: 55px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background-color: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            margin-top: auto; /* Drückt Dropzone nach unten */
+        }
+
+        .dropzone.drag-over {
+            background-color: #e3f2fd;
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+        }
+
+        .dropzone.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+            border-style: solid;
+        }
+
+        .dropzone.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            border-style: solid;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        button:active { transform: translateY(1px); }
+        .btn-check { background-color: var(--success-color); }
+        .btn-reset { background-color: #ff9800; }
+        .btn-solve { background-color: var(--primary-color); }
+
+        .solution-text {
+            display: none;
+            margin-top: 8px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .draggable { width: 100%; justify-content: center; box-sizing: border-box;}
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Zuordnungsaufgabe</h1>
+    <p class="instruction">
+        Ordnen Sie die Verben zu.<br>
+        🚶 = Zu Fuß (gehen) | 🚗 = Transport (fahren)
+    </p>
+
+    <!-- Word Pool -->
+    <div class="word-pool" id="wordPool">
+        <div class="draggable" draggable="true" id="verb-vhodit">🚶 входит</div>
+        <div class="draggable" draggable="true" id="verb-podhodit">🚶 подходит</div>
+        <div class="draggable" draggable="true" id="verb-vyhodit">🚶 выходит</div>
+        <div class="draggable" draggable="true" id="verb-othodit">🚶 отходит</div>
+        <div class="draggable transport" draggable="true" id="verb-vyezzhaet">🚗 въезжает</div>
+        <div class="draggable transport" draggable="true" id="verb-viezzhaet">🚗 выезжает</div>
+    </div>
+
+    <!-- Image Grid -->
+    <div class="image-grid">
+        
+        <!-- 1. Входит (Hineingehen) -->
+        <div class="image-card">
+            <span class="category-label">Zu Fuß</span>
+            <svg viewBox="0 0 200 150">
+                <!-- Haus -->
+                <path d="M60,140 V60 L100,20 L140,60 V140 H60" fill="#f5f5f5" stroke="#333" stroke-width="2"/>
+                <!-- Türrahmen -->
+                <rect x="85" y="90" width="30" height="50" fill="white" stroke="#333" stroke-width="2"/>
+                
+                <!-- Person (Start) -->
+                <text x="20" y="130" class="svg-icon">🚶</text>
+                
+                <!-- Pfeil (Hinein) -->
+                <defs>
+                    <marker id="arrow-in" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#3f51b5" />
+                    </marker>
+                </defs>
+                <line x1="50" y1="115" x2="100" y2="115" stroke="#3f51b5" stroke-width="5" marker-end="url(#arrow-in)"/>
+            </svg>
+            <div class="dropzone" data-correct="verb-vhodit"></div>
+            <div class="solution-text">входит</div>
+        </div>
+
+        <!-- 2. Выходит (Hinausgehen) -->
+        <div class="image-card">
+            <span class="category-label">Zu Fuß</span>
+            <svg viewBox="0 0 200 150">
+                <!-- Haus -->
+                <path d="M60,140 V60 L100,20 L140,60 V140 H60" fill="#f5f5f5" stroke="#333" stroke-width="2"/>
+                <!-- Türrahmen -->
+                <rect x="85" y="90" width="30" height="50" fill="white" stroke="#333" stroke-width="2"/>
+                
+                <!-- Person (Ziel) -->
+                <text x="150" y="130" class="svg-icon">🚶</text>
+                
+                <!-- Pfeil (Hinaus) -->
+                <defs>
+                    <marker id="arrow-out" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#f44336" />
+                    </marker>
+                </defs>
+                <!-- Startet IM Haus, endet DRAUSSEN -->
+                <line x1="100" y1="115" x2="150" y2="115" stroke="#f44336" stroke-width="5" marker-end="url(#arrow-out)"/>
+            </svg>
+            <div class="dropzone" data-correct="verb-vyhodit"></div>
+            <div class="solution-text">выходит</div>
+        </div>
+
+        <!-- 3. Подходит (Herangehen) -->
+        <div class="image-card">
+            <span class="category-label">Zu Fuß</span>
+            <svg viewBox="0 0 200 150">
+                <!-- Haus (Rechts) -->
+                <path d="M120,140 V60 L160,20 L200,60 V140 H120" fill="#f5f5f5" stroke="#333" stroke-width="2"/>
+                <rect x="145" y="90" width="30" height="50" fill="white" stroke="#333" stroke-width="2"/>
+                
+                <!-- Person (Start) -->
+                <text x="10" y="130" class="svg-icon">🚶</text>
+                
+                <!-- Pfeil (Annäherung, stoppt VOR Haus) -->
+                <line x1="40" y1="115" x2="110" y2="115" stroke="#3f51b5" stroke-width="5" marker-end="url(#arrow-in)"/>
+                <!-- Zielpunkt vor Haus -->
+                <circle cx="115" cy="115" r="4" fill="#3f51b5"/>
+            </svg>
+            <div class="dropzone" data-correct="verb-podhodit"></div>
+            <div class="solution-text">подходит</div>
+        </div>
+
+        <!-- 4. Отходит (Weggehen) -->
+        <div class="image-card">
+            <span class="category-label">Zu Fuß</span>
+            <svg viewBox="0 0 200 150">
+                <!-- Haus (Links) -->
+                <path d="M0,140 V60 L40,20 L80,60 V140 H0" fill="#f5f5f5" stroke="#333" stroke-width="2"/>
+                <rect x="25" y="90" width="30" height="50" fill="white" stroke="#333" stroke-width="2"/>
+                
+                <!-- Person (Weggehend) -->
+                <text x="150" y="130" class="svg-icon">🚶</text>
+                
+                <!-- Pfeil (Weg vom Haus) -->
+                <circle cx="85" cy="115" r="4" fill="#ff9800"/>
+                <line x1="90" y1="115" x2="145" y2="115" stroke="#ff9800" stroke-width="5" marker-end="url(#arrow-away)"/>
+                <defs>
+                    <marker id="arrow-away" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <path d="M0,0 L0,6 L9,3 z" fill="#ff9800" />
+                    </marker>
+                </defs>
+            </svg>
+            <div class="dropzone" data-correct="verb-othodit"></div>
+            <div class="solution-text">отходит</div>
+        </div>
+
+        <!-- 5. Въезжает (Hineinfahren) -->
+        <div class="image-card">
+            <span class="category-label" style="background:#e3f2fd; color:#1565c0;">Fahren</span>
+            <svg viewBox="0 0 200 150">
+                <!-- Garage -->
+                <rect x="100" y="50" width="90" height="90" fill="#cfd8dc" stroke="#455a64" stroke-width="3"/>
+                <!-- Garagentor (Offen, dunkel) -->
+                <rect x="110" y="70" width="70" height="70" fill="#546e7a"/>
+                
+                <!-- Auto Emoji -->
+                <text x="10" y="125" class="svg-icon">🚗</text>
+                
+                <!-- Pfeil (In die Garage) -->
+                <!-- Pfeil geht ÜBER das Auto in die Garage -->
+                <line x1="60" y1="105" x2="130" y2="105" stroke="#1565c0" stroke-width="8" marker-end="url(#arrow-drive-in)"/>
+                <defs>
+                    <marker id="arrow-drive-in" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                        <path d="M0,0 L0,8 L8,4 z" fill="#1565c0" />
+                    </marker>
+                </defs>
+            </svg>
+            <div class="dropzone" data-correct="verb-vyezzhaet"></div>
+            <div class="solution-text">въезжает</div>
+        </div>
+
+        <!-- 6. Выезжает (Hinausfahren) -->
+        <div class="image-card">
+            <span class="category-label" style="background:#e3f2fd; color:#1565c0;">Fahren</span>
+            <svg viewBox="0 0 200 150">
+                <!-- Garage -->
+                <rect x="10" y="50" width="90" height="90" fill="#cfd8dc" stroke="#455a64" stroke-width="3"/>
+                <!-- Garagentor -->
+                <rect x="20" y="70" width="70" height="70" fill="#546e7a"/>
+                
+                <!-- Auto Emoji (Draußen) -->
+                <text x="140" y="125" class="svg-icon">🚗</text>
+                
+                <!-- Pfeil (Aus der Garage) -->
+                <line x1="70" y1="105" x2="135" y2="105" stroke="#c62828" stroke-width="8" marker-end="url(#arrow-drive-out)"/>
+                <defs>
+                    <marker id="arrow-drive-out" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                        <path d="M0,0 L0,8 L8,4 z" fill="#c62828" />
+                    </marker>
+                </defs>
+            </svg>
+            <div class="dropzone" data-correct="verb-viezzhaet"></div>
+            <div class="solution-text">выезжает</div>
+        </div>
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+
+</div>
+
+<script>
+    /* Drag & Drop Logik */
+    const draggables = document.querySelectorAll('.draggable');
+    const dropzones = document.querySelectorAll('.dropzone');
+    const wordPool = document.getElementById('wordPool');
+    let draggedItem = null;
+
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', (e) => {
+            draggedItem = draggable;
+            e.dataTransfer.effectAllowed = 'move';
+            draggable.style.opacity = '0.5';
+        });
+
+        draggable.addEventListener('dragend', () => {
+            draggedItem = null;
+            draggable.style.opacity = '1';
+        });
+    });
+
+    const allZones = [...dropzones, wordPool];
+
+    allZones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (zone.classList.contains('dropzone')) {
+                zone.classList.add('drag-over');
+            }
+        });
+
+        zone.addEventListener('dragleave', () => {
+            if (zone.classList.contains('dropzone')) {
+                zone.classList.remove('drag-over');
+            }
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (zone.classList.contains('dropzone')) {
+                zone.classList.remove('drag-over');
+            }
+
+            if (draggedItem) {
+                // Tauschlogik: Wenn Zone besetzt, schiebe altes Item in Pool
+                if (zone.classList.contains('dropzone') && zone.children.length > 0) {
+                    const existingItem = zone.children[0];
+                    wordPool.appendChild(existingItem);
+                }
+                zone.appendChild(draggedItem);
+                zone.classList.remove('correct', 'incorrect');
+            }
+        });
+    });
+
+    function checkAnswers() {
+        dropzones.forEach(zone => {
+            const item = zone.querySelector('.draggable');
+            zone.classList.remove('correct', 'incorrect');
+
+            if (item) {
+                if (item.id === zone.dataset.correct) {
+                    zone.classList.add('correct');
+                } else {
+                    zone.classList.add('incorrect');
+                }
+            } else {
+                zone.classList.add('incorrect');
+            }
+        });
+    }
+
+    function resetTask() {
+        draggables.forEach(item => {
+            wordPool.appendChild(item);
+        });
+        dropzones.forEach(zone => {
+            zone.classList.remove('correct', 'incorrect', 'drag-over');
+        });
+        document.querySelectorAll('.solution-text').forEach(text => {
+            text.style.display = 'none';
+        });
+    }
+
+    function showSolution() {
+        resetTask();
+        dropzones.forEach(zone => {
+            const correctId = zone.dataset.correct;
+            const correctItem = document.getElementById(correctId);
+            if (correctItem) {
+                zone.appendChild(correctItem);
+                zone.classList.add('correct');
+            }
+        });
+        document.querySelectorAll('.solution-text').forEach(text => {
+            text.style.display = 'block';
+        });
+    }
+</script>
+
+</body>
+</html>
