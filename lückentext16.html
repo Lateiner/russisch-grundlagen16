@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Präfixe ergänzen</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #e8eaf6;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --input-bg: #fff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 20px;
+            background: var(--secondary-color);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* Sticky Prefix Helper Bar */
+        .helper-bar {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 10px;
+            border-bottom: 2px solid #eee;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .prefix-btn {
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            background: #fafafa;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            transition: all 0.2s;
+            box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+        }
+
+        .prefix-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .prefix-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Satz-Liste */
+        .sentence-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sentence-item {
+            background-color: #fff;
+            padding: 15px;
+            border-left: 4px solid #ddd;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+
+        .context {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .ru-sentence {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        /* Das Input Feld */
+        .gap-input {
+            width: 50px;
+            font-size: 1.2rem;
+            text-align: center;
+            border: none;
+            border-bottom: 2px solid #999;
+            background-color: #f9f9f9;
+            color: var(--primary-color);
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+
+        .gap-input:focus {
+            outline: none;
+            border-bottom-color: var(--primary-color);
+            background-color: #e8eaf6;
+        }
+
+        /* Feedback Status */
+        .gap-input.correct {
+            border-bottom-color: var(--success-color);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .gap-input.incorrect {
+            border-bottom-color: var(--error-color);
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .highlight-prep {
+            color: #000;
+            font-weight: bold;
+            text-decoration: underline;
+            text-decoration-color: #bbb;
+        }
+
+        /* Buttons unten */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        button.action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        button.action-btn:hover { opacity: 0.9; }
+        .btn-check { background-color: var(--success-color); }
+        .btn-reset { background-color: #ff9800; }
+        .btn-solve { background-color: var(--primary-color); }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .ru-sentence { font-size: 1.1rem; }
+            .prefix-btn { font-size: 1rem; padding: 6px 12px; }
+            .btn-group { flex-direction: column; }
+            button.action-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lückentext: Wortbildung</h1>
+    <p class="instruction">
+        Ergänzen Sie das fehlende Präfix.<br>
+        Klicken Sie in die Lücke und wählen Sie oben das passende Stück aus.
+    </p>
+
+    <!-- Helper Bar: Einfach klicken zum Einfügen -->
+    <div class="helper-bar">
+        <button class="prefix-btn" onclick="insertText('в')">в-</button>
+        <button class="prefix-btn" onclick="insertText('въ')">въ-</button>
+        <button class="prefix-btn" onclick="insertText('вы')">вы-</button>
+        <button class="prefix-btn" onclick="insertText('под')">под-</button>
+        <button class="prefix-btn" onclick="insertText('от')">от-</button>
+    </div>
+
+    <div class="sentence-list">
+
+        <!-- Satz 1: входить (Eintritt) -->
+        <div class="sentence-item">
+            <div class="context">Er geht in das Zimmer hinein. (drinnen)</div>
+            <div class="ru-sentence">
+                Он <input type="text" class="gap-input" data-correct="в" readonly>ходит 
+                <span class="highlight-prep">в</span> комнату.
+            </div>
+        </div>
+
+        <!-- Satz 2: выходить (Austritt) -->
+        <div class="sentence-item">
+            <div class="context">Wir gehen aus dem Haus hinaus. (draußen)</div>
+            <div class="ru-sentence">
+                Мы <input type="text" class="gap-input" data-correct="вы" readonly>ходим 
+                <span class="highlight-prep">из</span> дома.
+            </div>
+        </div>
+
+        <!-- Satz 3: подходить (Annäherung) -->
+        <div class="sentence-item">
+            <div class="context">Der Student geht an die Tafel heran. (Nähe)</div>
+            <div class="ru-sentence">
+                Студент <input type="text" class="gap-input" data-correct="под" readonly>ходит 
+                <span class="highlight-prep">к</span> доске.
+            </div>
+        </div>
+
+        <!-- Satz 4: отходить (Entfernung) -->
+        <div class="sentence-item">
+            <div class="context">Geh vom Fenster weg! (Distanz)</div>
+            <div class="ru-sentence">
+                <input type="text" class="gap-input" data-correct="от" readonly>ходи 
+                <span class="highlight-prep">от</span> окна!
+            </div>
+        </div>
+
+        <!-- Satz 5: въезжать (Hineinfahren - mit Härtezeichen!) -->
+        <div class="sentence-item">
+            <div class="context">Das Auto fährt in die Garage hinein. (Transport)</div>
+            <div class="ru-sentence">
+                Машина <input type="text" class="gap-input" data-correct="въ" readonly>езжает 
+                <span class="highlight-prep">в</span> гараж.
+            </div>
+        </div>
+
+        <!-- Satz 6: выезжать (Hinausfahren) -->
+        <div class="sentence-item">
+            <div class="context">Der Bus fährt aus der Stadt hinaus. (Transport)</div>
+            <div class="ru-sentence">
+                Автобус <input type="text" class="gap-input" data-correct="вы" readonly>езжает 
+                <span class="highlight-prep">из</span> города.
+            </div>
+        </div>
+        
+        <!-- Satz 7: подъезжать (Heranfahren) -->
+        <div class="sentence-item">
+            <div class="context">Das Taxi fährt an das Hotel heran. (Transport)</div>
+            <div class="ru-sentence">
+                Такси <input type="text" class="gap-input" data-correct="под" readonly>ъезжает 
+                <span class="highlight-prep">к</span> отелю.
+            </div>
+        </div>
+
+        <!-- Satz 8: отходить (Weggehen - Zug) -->
+        <div class="sentence-item">
+            <div class="context">Der Zug fährt (geht) vom Bahnsteig ab.</div>
+            <div class="ru-sentence">
+                Поезд <input type="text" class="gap-input" data-correct="от" readonly>ходит 
+                <span class="highlight-prep">от</span> платформы.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button class="action-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="action-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="action-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+
+</div>
+
+<script>
+    let activeInput = null;
+
+    // Event Listener für alle Inputs, um das aktive Feld zu tracken
+    document.querySelectorAll('.gap-input').forEach(input => {
+        input.addEventListener('click', function() {
+            // Vorheriges Highlight entfernen
+            document.querySelectorAll('.gap-input').forEach(el => el.style.borderColor = '');
+            
+            activeInput = this;
+            // Visuelles Feedback welches Feld aktiv ist (optional via CSS focus, aber hier für Logik)
+            this.focus();
+        });
+    });
+
+    // Helper Funktion: Text in aktives Feld einfügen
+    function insertText(text) {
+        if (activeInput) {
+            activeInput.value = text;
+            activeInput.classList.remove('correct', 'incorrect');
+            
+            // Automatisch zum nächsten Input springen (User Experience)
+            let inputs = Array.from(document.querySelectorAll('.gap-input'));
+            let index = inputs.indexOf(activeInput);
+            if (index > -1 && index < inputs.length - 1) {
+                activeInput = inputs[index + 1];
+                activeInput.focus();
+            }
+        } else {
+            // Falls kein Feld aktiv ist, nimm das erste leere
+            const inputs = document.querySelectorAll('.gap-input');
+            for (let input of inputs) {
+                if (input.value === '') {
+                    activeInput = input;
+                    input.value = text;
+                    input.focus();
+                    break;
+                }
+            }
+        }
+    }
+
+    function checkAnswers() {
+        const inputs = document.querySelectorAll('.gap-input');
+        
+        inputs.forEach(input => {
+            const correct = input.dataset.correct.toLowerCase();
+            const value = input.value.trim().toLowerCase();
+
+            input.classList.remove('correct', 'incorrect');
+
+            if (value === correct) {
+                input.classList.add('correct');
+                // Optisches Feedback für Container
+                input.closest('.sentence-item').style.borderLeftColor = 'var(--success-color)';
+            } else {
+                input.classList.add('incorrect');
+                input.closest('.sentence-item').style.borderLeftColor = 'var(--error-color)';
+            }
+        });
+    }
+
+    function resetTask() {
+        activeInput = null;
+        const inputs = document.querySelectorAll('.gap-input');
+        
+        inputs.forEach(input => {
+            input.value = '';
+            input.classList.remove('correct', 'incorrect');
+            input.closest('.sentence-item').style.borderLeftColor = '#ddd';
+        });
+        
+        // Fokus auf das erste Feld setzen
+        if(inputs.length > 0) {
+            activeInput = inputs[0];
+        }
+    }
+
+    function showSolution() {
+        const inputs = document.querySelectorAll('.gap-input');
+        
+        inputs.forEach(input => {
+            input.value = input.dataset.correct;
+            input.classList.remove('incorrect');
+            input.classList.add('correct');
+            input.closest('.sentence-item').style.borderLeftColor = 'var(--primary-color)';
+        });
+    }
+
+    // Initialisierung: Erstes Feld aktiv setzen beim Laden
+    window.onload = function() {
+        const first = document.querySelector('.gap-input');
+        if(first) activeInput = first;
+    };
+
+</script>
+
+</body>
+</html>
