@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Präfix-Präposition Match (8 Paare)</title>
+    <!-- Polyfill für Touch-Interaktionen -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #f5f5f5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --line-color-active: #2196f3;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Matching Area Container */
+        .match-area {
+            position: relative; /* Wichtig für SVG Overlay */
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            padding: 10px;
+            margin-bottom: 30px;
+            /* Genug Platz für 8 Items sicherstellen */
+            min-height: 600px; 
+        }
+
+        /* SVG Overlay für Linien */
+        #connection-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        line {
+            stroke-width: 3;
+            stroke-linecap: round;
+            transition: stroke 0.3s;
+        }
+
+        /* Spalten */
+        .column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+            width: 45%;
+            z-index: 2; 
+        }
+
+        /* Items (Buttons) */
+        .match-item {
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 12px 15px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .match-item:hover {
+            border-color: #bbb;
+            background-color: #fafafa;
+        }
+
+        /* Icons */
+        .icon {
+            font-size: 1.2rem;
+            min-width: 25px;
+        }
+
+        /* Zustände */
+        .match-item.selected {
+            background-color: #e3f2fd;
+            border-color: var(--line-color-active);
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.2);
+        }
+
+        .match-item.connected {
+            background-color: #e3f2fd;
+            border-color: var(--line-color-active);
+            color: #1565c0;
+        }
+
+        /* Ergebnis-Farben */
+        .match-item.correct, line.correct {
+            border-color: var(--success-color);
+            stroke: var(--success-color);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .match-item.incorrect, line.incorrect {
+            border-color: var(--error-color);
+            stroke: var(--error-color);
+            background-color: #ffebee;
+        }
+
+        /* Hinweis-Label */
+        .col-label {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        /* Buttons unten */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        button.action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        button.action-btn:hover { opacity: 0.9; }
+        .btn-check { background-color: var(--success-color); }
+        .btn-reset { background-color: #ff9800; }
+        .btn-solve { background-color: var(--primary-color); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .match-area { gap: 15px; padding: 5px; min-height: 550px;}
+            .match-item { font-size: 0.85rem; padding: 10px; }
+            .icon { font-size: 1rem; }
+            .btn-group { flex-direction: column; }
+            button.action-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Präfix-Präposition-Match</h1>
+    <p class="instruction">
+        Verbinden Sie das Verb mit der passenden Fortsetzung.<br>
+        Achten Sie auf das Präfix und das Transportmittel (🚶 vs 🚗).
+    </p>
+
+    <div class="match-area" id="matchArea">
+        <svg id="connection-svg"></svg>
+
+        <!-- Linke Spalte: Verben -->
+        <div class="column" id="col-left">
+            <div class="col-label">Verb</div>
+            
+            <!-- 4x Gehen -->
+            <div class="match-item" data-id="L1" data-pair="1"><span class="icon">🚶</span> входить</div>
+            <div class="match-item" data-id="L2" data-pair="2"><span class="icon">🚶</span> выходить</div>
+            <div class="match-item" data-id="L3" data-pair="3"><span class="icon">🚶</span> подходить</div>
+            <div class="match-item" data-id="L4" data-pair="4"><span class="icon">🚶</span> отходить</div>
+            
+            <!-- 4x Fahren -->
+            <div class="match-item" data-id="L5" data-pair="5"><span class="icon">🚗</span> въезжать</div>
+            <div class="match-item" data-id="L6" data-pair="6"><span class="icon">🚗</span> выезжать</div>
+            <div class="match-item" data-id="L7" data-pair="7"><span class="icon">🚗</span> подъезжать</div>
+            <div class="match-item" data-id="L8" data-pair="8"><span class="icon">🚗</span> отъезжать</div>
+        </div>
+
+        <!-- Rechte Spalte: Ziele/Orte (Randomisiert) -->
+        <div class="column" id="col-right">
+            <div class="col-label">Ziel / Ort</div>
+            
+            <div class="match-item" data-id="R1" data-pair="2">... из дома (hinaus)</div>
+            <div class="match-item" data-id="R2" data-pair="5">... в гараж (hinein)</div>
+            <div class="match-item" data-id="R3" data-pair="3">... к окну (heran)</div>
+            <div class="match-item" data-id="R4" data-pair="8">... от вокзала (weg)</div>
+            <div class="match-item" data-id="R5" data-pair="1">... в комнату (hinein)</div>
+            <div class="match-item" data-id="R6" data-pair="6">... из города (hinaus)</div>
+            <div class="match-item" data-id="R7" data-pair="4">... от стены (weg)</div>
+            <div class="match-item" data-id="R8" data-pair="7">... к магазину (heran)</div>
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+        <button class="action-btn btn-check" onclick="checkConnections()">Überprüfen</button>
+        <button class="action-btn btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="action-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+
+</div>
+
+<script>
+    const matchArea = document.getElementById('matchArea');
+    const svg = document.getElementById('connection-svg');
+    let selectedLeft = null;
+    let selectedRight = null;
+    let connections = []; 
+
+    // Event Listener
+    document.querySelectorAll('.match-item').forEach(item => {
+        item.addEventListener('click', () => handleItemClick(item));
+    });
+
+    window.addEventListener('resize', () => {
+        // Kurze Verzögerung für Resize-Performance
+        requestAnimationFrame(updateLines);
+    });
+
+    function handleItemClick(item) {
+        if (item.classList.contains('correct') || item.classList.contains('incorrect')) return;
+
+        const isLeft = item.parentElement.id === 'col-left';
+
+        // Verbindung lösen bei Klick auf verbundenes Item
+        if (item.classList.contains('connected')) {
+            removeConnection(item);
+            return;
+        }
+
+        // Auswahl Logik
+        if (isLeft) {
+            if (selectedLeft) selectedLeft.classList.remove('selected');
+            if (selectedLeft === item) {
+                selectedLeft = null; return;
+            }
+            selectedLeft = item;
+            item.classList.add('selected');
+        } else {
+            if (selectedRight) selectedRight.classList.remove('selected');
+            if (selectedRight === item) {
+                selectedRight = null; return;
+            }
+            selectedRight = item;
+            item.classList.add('selected');
+        }
+
+        // Match erstellen
+        if (selectedLeft && selectedRight) {
+            createConnection(selectedLeft, selectedRight);
+            selectedLeft.classList.remove('selected');
+            selectedRight.classList.remove('selected');
+            selectedLeft = null;
+            selectedRight = null;
+        }
+    }
+
+    function createConnection(leftItem, rightItem) {
+        leftItem.classList.add('connected');
+        rightItem.classList.add('connected');
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('stroke', '#2196f3');
+        svg.appendChild(line);
+
+        const connection = {
+            leftId: leftItem.dataset.id,
+            rightId: rightItem.dataset.id,
+            leftEl: leftItem,
+            rightEl: rightItem,
+            line: line
+        };
+        connections.push(connection);
+        updateSingleLine(connection);
+    }
+
+    function removeConnection(item) {
+        const index = connections.findIndex(c => c.leftEl === item || c.rightEl === item);
+        if (index !== -1) {
+            const conn = connections[index];
+            conn.leftEl.classList.remove('connected', 'correct', 'incorrect');
+            conn.rightEl.classList.remove('connected', 'correct', 'incorrect');
+            if(conn.line.parentNode) conn.line.parentNode.removeChild(conn.line);
+            connections.splice(index, 1);
+        }
+    }
+
+    function updateLines() {
+        connections.forEach(conn => updateSingleLine(conn));
+    }
+
+    function updateSingleLine(conn) {
+        const containerRect = matchArea.getBoundingClientRect();
+        const leftRect = conn.leftEl.getBoundingClientRect();
+        const rightRect = conn.rightEl.getBoundingClientRect();
+
+        const x1 = leftRect.right - containerRect.left;
+        const y1 = leftRect.top + (leftRect.height / 2) - containerRect.top;
+        const x2 = rightRect.left - containerRect.left;
+        const y2 = rightRect.top + (rightRect.height / 2) - containerRect.top;
+
+        conn.line.setAttribute('x1', x1);
+        conn.line.setAttribute('y1', y1);
+        conn.line.setAttribute('x2', x2);
+        conn.line.setAttribute('y2', y2);
+    }
+
+    function checkConnections() {
+        if (connections.length === 0) return;
+
+        connections.forEach(conn => {
+            const leftPair = conn.leftEl.dataset.pair;
+            const rightPair = conn.rightEl.dataset.pair;
+
+            if (leftPair === rightPair) {
+                conn.leftEl.classList.add('correct');
+                conn.rightEl.classList.add('correct');
+                conn.line.setAttribute('stroke', '#4caf50');
+                conn.line.classList.add('correct');
+            } else {
+                conn.leftEl.classList.add('incorrect');
+                conn.rightEl.classList.add('incorrect');
+                conn.line.setAttribute('stroke', '#f44336');
+                conn.line.classList.add('incorrect');
+            }
+        });
+    }
+
+    function resetTask() {
+        while (connections.length > 0) {
+            const conn = connections.pop();
+            conn.leftEl.classList.remove('connected', 'correct', 'incorrect', 'selected');
+            conn.rightEl.classList.remove('connected', 'correct', 'incorrect', 'selected');
+            if(conn.line.parentNode) conn.line.parentNode.removeChild(conn.line);
+        }
+        selectedLeft = null;
+        selectedRight = null;
+        document.querySelectorAll('.match-item').forEach(el => {
+            el.classList.remove('selected', 'connected', 'correct', 'incorrect');
+        });
+    }
+
+    function showSolution() {
+        resetTask();
+        const leftItems = document.querySelectorAll('#col-left .match-item');
+        leftItems.forEach(left => {
+            const pairId = left.dataset.pair;
+            const right = document.querySelector(`#col-right .match-item[data-pair="${pairId}"]`);
+            if (left && right) {
+                createConnection(left, right);
+            }
+        });
+        connections.forEach(conn => {
+            conn.leftEl.classList.add('correct');
+            conn.rightEl.classList.add('correct');
+            conn.line.setAttribute('stroke', '#4caf50');
+        });
+    }
+</script>
+
+</body>
+</html>
